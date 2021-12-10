@@ -114,45 +114,42 @@ ggplot()+
             ))+
   ylab("D' Balance")+
   xlab("Race Distance (m)")+
-  theme_cowplot()
+  theme_cowplot(font_size = 12)
 }
 
-plot_lollipop_race <- function(cs_data, race_data){
-  
+to_seconds <- function(t){
+  t_split <- str_split(t, ":")
+  map_dbl(t_split, ~ (as.numeric(.x[[1]]) * 60 ) + as.numeric(.x[[2]]))
+}
 
+plot_lollipop_race <- function(runner_data, race_data){
+ 
   ggplot()+
-  geom_hline(data = cs_data_overlay_5k,
-             aes(yintercept = critical_speed_meters_second, color = fct_reorder(athlete, critical_speed_meters_second)))+
-  geom_segment(data = race_data_mens_5k,
+  geom_hline(data = runner_data,
+             aes(yintercept = critical_speed_meters_second,
+                 color = athlete))+
+  geom_segment(data = race_data,
                aes(x = meter_mark,
-                   xend = meter_mark, 
-                   y = 0, 
+                   xend = meter_mark,
+                   y = 0,
                    yend = lap_leader_speed_meters_second),
                size = 1)+
-  geom_point(data = race_data_mens_5k, 
-             aes(x = meter_mark, 
-                 y = lap_leader_speed_meters_second), 
-             size = 9,
+  geom_point(data = race_data,
+             aes(x = meter_mark,
+                 y = lap_leader_speed_meters_second),
+             size = 8,
              shape = 21,
              fill = "grey15",
              stroke = 1.5)+
-  
-  geom_text(data = race_data_mens_5k, 
-            aes(x = meter_mark, 
+  geom_text(data = race_data,
+            aes(x = meter_mark,
                 y = lap_leader_speed_meters_second,
                 label = round(lap_leader_speed_meters_second, 2)),
-            size = 3,
+            size = 2.75,
             color = "white")+
   ylab("Lap Speed (meters/second)")+
   xlab("Distance (meters)")+
-  ggtitle("Men's 5k")+
-  coord_cartesian(ylim = c(5, 8))+
   scale_y_continuous(expand = expansion(c(0, 0.1)))+
-  scale_x_continuous(breaks = race_data_mens_5k$meter_mark)+
-  scale_color_manual(name = "Athlete Critical Speed", values = brewer.pal(4, "Dark2"), guide = guide_legend(reverse=TRUE))+
-  theme_cowplot()+
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = c(0.1, 0.7)
-  )
+  scale_x_continuous(breaks = race_data$meter_mark)+
+  theme_cowplot(font_size = 12)
 }

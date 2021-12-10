@@ -1,0 +1,13 @@
+---
+title: "A deep dive into the replication, repeatability, and future utilization of the critical running speed model for predicting distance race performances"
+author: Brent Scott
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The beauty of the sport of running is in its simplicity - the winner is the one who completes the distance in the least time. Interestingly, the objectively fastest runner does not always win the race despite having the best personal record at a distance. Even having measures of an athletes maximal oxygen consumption, which is often used as a measure of cardio-respiratory fitness, is not enough to solely predict distance runner performance. Ultimately, the physiology underlying distance race performance is complicated as both aerobic and anaerobic energy pathways are utilized to meet the energy demands of the activity. More recently, the Critical Speed Model (CS-Model) has been proposed to provide reliable methods at predicting distance running performance. The CS-Model linear models an athletes personal records at known distance against the f
