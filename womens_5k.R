@@ -1,14 +1,15 @@
-library(tidyverse)
-library(here)
-library(magrittr)
-library(cowplot)
-library(RColorBrewer)
-library(ggpubr)
-
-source(here("functions.R"))
+# library(tidyverse)
+# library(here)
+# library(magrittr)
+# library(cowplot)
+# library(RColorBrewer)
+# library(ggpubr)
+# 
+# source(here("functions.R"))
 
 ########################################
-
+library(kin697u)
+library(ggpubr)
 womens_5k <- 
   tribble(
   ~meter_mark, ~lap_distance_meters, ~time,
@@ -75,7 +76,7 @@ womens_runners <-
 
 
 
-d_balance_womens_5k <- calc_d_balance(womens_runners, womens_5k)
+d_balance_womens_5k <- kin697u::calc_d_balance(womens_runners, womens_5k)
 
 d_balance_womens_5k$athlete <- factor(d_balance_womens_5k$athlete, levels = c("Hassan", "Obiri", "Tsegay",  "Tirop"))
 
@@ -86,10 +87,11 @@ d_balance_womens_5k$athlete <- factor(d_balance_womens_5k$athlete, levels = c("H
 )
 
 womens_runners$athlete <- factor(womens_runners$athlete, levels = c("Hassan", "Obiri", "Tsegay",  "Tirop"))
+
 (plot_womens_5k_lollipop <-
     plot_lollipop_race(womens_runners, womens_5k)+
     scale_color_manual(name = NULL, values = c("gold", "grey50", "darkorange", "black"))+
-    coord_cartesian(ylim = c(4, 8))+
+    coord_cartesian(ylim = c(4, 7.3))+
     ggtitle("2021 Olympic Women's 5000m")+
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -107,6 +109,6 @@ womens_runners$athlete <- factor(womens_runners$athlete, levels = c("Hassan", "O
   ggpubr::ggtexttable(theme = ttheme("light"))
 )
   
-womens_bottom <- plot_grid(womens_5k_table, plot_womens_5k, nrow = 1, labels = c("B", "C"))
+womens_bottom <- cowplot::plot_grid(womens_5k_table, plot_womens_5k, nrow = 1, labels = c("B", "C"))
 
-plot_grid(plot_womens_5k_lollipop, womens_bottom, nrow = 2, labels = c("A", ""))
+cowplot::plot_grid(plot_womens_5k_lollipop, womens_bottom, nrow = 2, labels = c("A", ""))

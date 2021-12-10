@@ -1,10 +1,11 @@
-library(tidyverse)
+# library(tidyverse)
 library(here)
+library(kin697u)
 library(cowplot)
 library(RColorBrewer)
-library(magrittr)
-
-source(here("functions.R"))
+# library(magrittr)
+# 
+# source(here("functions.R"))
 # copy pasta from Kirby 2021 paper
 runner_data_mens_5k <- 
   tribble(
@@ -76,11 +77,11 @@ mens_5k$athlete <- factor(mens_5k$athlete, levels = c("Muktar Edris",
   scale_size_manual(values = c(0.5, 1))+
   ylab("D' Balance")+
   xlab("Race Distance (m)")+
-  ggtitle("Replication of Kirby 2021 Figure 1B")+
+  ggtitle("5k Replication of Kirby 2021 Figure 1B")+
     scale_color_manual(name = "Athlete", values = brewer.pal(4, "Dark2"))+
     scale_linetype(name = "Data Source")+
     scale_size_manual(values = c(0.5, 1), guide = "none")+
-  theme_cowplot()
+  theme_cowplot(12)
 )
 
 
@@ -155,11 +156,12 @@ mens_10k$athlete <- factor(mens_10k$athlete, levels = c("Mohammed Farah",
               ))+
     ylab("D' Balance")+
     xlab("Race Distance (m)")+
-    ggtitle("Replication of Kirby 2021 Figure 1D")+
+    ggtitle("10k Replication of Kirby 2021 Figure 1D")+
     scale_color_manual(name = "Athlete", values = brewer.pal(4, "Dark2"))+
     scale_linetype(name = "Data Source")+
     scale_size_manual(values = c(0.5, 1), guide = "none")+
-    theme_cowplot()
+    theme_cowplot(10)
+    
 )
 
 
@@ -223,7 +225,7 @@ ggplot()+
   scale_y_continuous(expand = expansion(c(0, 0.1)))+
   scale_x_continuous(breaks = race_data_mens_5k$meter_mark)+
   scale_color_manual(name = "Athlete Critical Speed", values = brewer.pal(4, "Dark2"), guide = guide_legend(reverse=TRUE))+
-  theme_cowplot()+
+  theme_cowplot(10)+
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     legend.position = c(0.1, 0.7)
@@ -247,10 +249,10 @@ ggplot()+
   geom_point(data = race_data_mens_10k, 
              aes(x = meter_mark, 
                  y = lap_leader_speed_meters_second), 
-             size = 9,
+             size = 8,
              shape = 21,
              fill = "grey15",
-             stroke = 1.5)+
+             stroke = 1.2)+
   
   geom_text(data = race_data_mens_10k, 
             aes(x = meter_mark, 
@@ -265,7 +267,7 @@ ggplot()+
   ggtitle("Men's 10k")+
   scale_x_continuous(breaks = race_data_mens_10k$meter_mark)+
   scale_color_manual(name = "Athlete Critical Speed", values = brewer.pal(4, "Dark2"), guide = guide_legend(reverse=TRUE))+
-  theme_cowplot()+
+  theme_cowplot(12)+
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     legend.position = c(0.1, 0.7)
@@ -274,6 +276,11 @@ ggplot()+
 
 top <- plot_grid(lollipop_5k, plot_mens_5k, nrow = 1, labels = c("A", "B"))
 bottom <- plot_grid(lollipop_10k, plot_mens_10k, nrow = 1, labels = c("C", "D"))
+middle <-  plot_grid(plot_mens_5k,
+                     plot_mens_10k,
+                     nrow = 1,
+                     labels = c("B", "C"),
+                     rel_widths = c(0.45, 0.55))
 
-plot_grid(top, bottom, nrow = 2)
+plot_grid(lollipop_5k, middle, lollipop_10k, nrow = 3, labels = c("A", "", "D"))
 
