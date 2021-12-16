@@ -30,9 +30,7 @@ if(knitr::is_html_output()){
 if(!require("kin697u", character.only = TRUE)){
  devtools::install_github("brentscott93/kin697u")
 }
-```
 
-```{r, library, message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(kin697u)
 library(here)
@@ -40,21 +38,34 @@ library(cowplot)
 library(ggpubr)
 library(RColorBrewer)
 
+
 ```
+
+```{r, library, message=FALSE, warning=FALSE, echo=FALSE, results='asis'}
+if(!knitr::is_html_output()){
+  cat(
+    "**NOTE:** This is a lame PDF document. You *could* be reading the way cooler HTML version at [brentscott.us/kin697/deep-dive](https://brentscott.us/kin697/deep-dive) which has interactive code folding to view/hide the source code of the document."
+  )
+}
+
+```
+
 
 ## Introduction
 
-The beauty of the sport of running is in its simplicity - the winner is the one who completes the distance in the least time. Interestingly, the objectively fastest runner does not always win the race despite previously having the fastest time for the given race distance. Moreover, even having measures of athletes' maximal oxygen consumption (VO^2^~max~), which is often used as a measure of cardio-respiratory fitness, is not sufficient information to solely predict distance runner performance. Additional exercise physiology laboratory tests can contribute to performance predictions by allowing for more control over the physiological variables that govern performance (lactate threshold, aneorobic power, etc.). Notably, in 1991 Michael Joyner used some of the physiological determinants of running performance (VO2max, lactate threshold, and running economy) to model and predict that a human could run a marathon in under 2 hours, almost 20 years before Eliud Kipchoge ran 1:59:40. Ultimately, the physiology underlying distance track races (\~800-10000m) performance is complicated as both aerobic and anaerobic energy pathways are utilized to meet the energy demands of the activity so the prediction of athletes' performances in these races becomes increasingly more complicated than compared to marathon distances where runners are exercising at intensities at or below their VO2max and lactate thresholds. Additional issues arise when addressing the concern of difficulty in providing training tools for coaches of high-school and collegiate athletes who do not have the time, money, or resources to readily measure all their athletes' physiological parameters in a laboratory setting. The Critical Speed Model (CS-Model) has been proposed to provide reliable methods at predicting distance running performance (@Jones2017). The CS-Model uses linear regression to model an athlete's time (x-axis) by the respective race distance (y-axis). Since the CS-Model is linear, the equation is of familiar form, y = mx + b, where the slope (m) is the athlete's critical speed in meters/second, and the y-intercept (b) is referred to as "D' Prime" in meters. D' Prime is a measure of anaerobic performance and theoretically describes how far a runner can sustain a given pace that is above their critical speed. Once D' Prime has been utilized a runner's maximum speed that can be sustained is their critical speed, at least until D' Prime can become "reconstituted" or restored. More recently, a so-called "D' Balance Model" has been shown to be highly correlated with performance in track distance races (even more so than critical speed or D' Prime) (@kirby2021). With these findings it was suggested that the "D' Balance Model" can become a useful tool for athletes and coaches to modify training and race preparations. However, the "D' Balance Model" has yet to be verified, replicated, or repeated outside the context of the original source. Additionally, for any potential tool to really be useful in practice it needs to be readily and easily accessible outside the scope of the original research. As such, here we sought to examine the replication of the "D' Balance Model" using the same 2017 World Championship Men's 5000m and 10,000m data, the repeatability of the model to predict the outcomes of other races (2020 Olympic Women's 5000m Final), and provide a potential framework for the future usability of the model for athletes and coaches.
+  The beauty of the sport of running is in its simplicity - the winner is the one who completes the distance in the least time. Interestingly, the objectively fastest runner does not always win the race despite previously having the fastest time for the given race distance. Moreover, even having measures of athletes' maximal oxygen consumption (VO^2^~max~), which is often used as a measure of cardio-respiratory fitness, is not sufficient information to solely predict distance runner performance. Additional exercise physiology laboratory tests can contribute to performance predictions by allowing for more control over the physiological variables that govern performance (lactate threshold, aneorobic power, etc.). Notably, in 1991 Michael Joyner used some of the physiological determinants of running performance (VO2max, lactate threshold, and running economy) to model and predict that a human could run a marathon in under 2 hours, almost 20 years before Eliud Kipchoge ran 1:59:40. Ultimately, the physiology underlying distance track races (\~800-10000m) performance is complicated as both aerobic and anaerobic energy pathways are utilized to meet the energy demands of the activity so the prediction of athletes' performances in these races becomes increasingly more complicated than compared to marathon distances where runners are exercising at intensities at or below their VO2max and lactate thresholds. Additional issues arise when addressing the concern of difficulty in providing training tools for coaches of high-school and collegiate athletes who do not have the time, money, or resources to readily measure all their athletes' physiological parameters in a laboratory setting. 
+  
+  The Critical Speed Model (CS-Model) has been proposed to provide reliable methods at predicting distance running performance (Jones 2017). The CS-Model uses linear regression to model an athlete's time (x-axis) by the respective race distance (y-axis). Since the CS-Model is linear, the equation is of familiar form, y = mx + b, where the slope (m) is the athlete's critical speed in meters/second, and the y-intercept (b) is referred to as "D' Prime" in meters. D' Prime is a measure of anaerobic performance and theoretically describes how far a runner can sustain a given pace that is above their critical speed. Once D' Prime has been utilized a runner's maximum speed that can be sustained is their critical speed, at least until D' Prime can become "reconstituted" or restored. More recently, a so-called "D' Balance Model" has been shown to be highly correlated with performance in track distance races (even more so than critical speed or D' Prime) (Kirby 2021). With these findings it was suggested that the "D' Balance Model" can become a useful tool for athletes and coaches to modify training and race preparations. However, the "D' Balance Model" has yet to be verified, replicated, or repeated outside the context of the original source. Additionally, for any potential tool to really be useful in practice it needs to be readily and easily accessible outside the scope of the original research. As such, here we sought to examine the replication of the "D' Balance Model" using the same 2017 World Championship Men's 5000m and 10,000m data, the repeatability of the model to predict the outcomes of other races (2020 Olympic Women's 5000m Final), and provide a potential framework for the future usability of the model for athletes and coaches.
 
 ## Methods
 
 ### Analysis
 
-Analysis of all data was performed using R (version 4.1.2) in RStudio (version 1.4.1717). Source code for this entire document is available <https://github.com/brentscott93/deep-dive-697>. This repository contains all data, code, and figures to replicate this document which was originally generated via [RMarkdown](https://rmarkdown.rstudio.com/). Core analysis functionality required to replicate the analysis, including both the Critical Speed Model and D' Balance calculations, have convenient wrappers available in the [{kin697u} R package which can be installed from Github.](https://github.com/brentscott93/kin697u) The {kin697u} package functions are used within this document as an example. Refer to the source code to see the internal working of the functions and package. The analysis of D' Balance is described further in the "Results" section.
+  Analysis of all data was performed using R (version 4.1.2) in RStudio (version 1.4.1717). Source code for this entire document is available <https://github.com/brentscott93/deep-dive-697>. This repository contains all data, code, and figures to replicate this document which was originally generated via [RMarkdown](https://rmarkdown.rstudio.com/). Core analysis functionality required to replicate the analysis, including both the Critical Speed Model and D' Balance calculations, have convenient wrappers available in the [{kin697u} R package which can be installed from Github.](https://github.com/brentscott93/kin697u) The {kin697u} package functions are used within this document as an example. Refer to the source code to see the internal working of the functions and package. The analysis of D' Balance is described further in the "Results" section.
 
 ### Replication of Kirby 2021 data
 
-In order to assess the replication of the "D' Balance Model" as utilized by the original authors, the publication figures from Kirby 2021 were digitized using *Engauge Digitizer* (Winchen et al.) in order to best estimate the data values from Figure 1 in Kirby 2021. This provided us with more reliable and repeatable estimates than choosing "by-eye" for the values of lap speed for the 5k and 10k (Kirby Figure 1a and 1c), and for the D' Balance curves (Kirby Figure 1b and 1d). To digitize an image three axis points are selected as anchors (indicated as red "+") and the x-y coordinates are calibrated accordingly. Desired data values are selected (blue "+") and their values were estimated by the program and saved as .csv files in the project's directory. This was performed for each of the four panels in Figure 1 of Kirby 2021. Critical speed and D'Prime values were copied verbatim from Tables 1 and 2 in Kirby 2021.
+  In order to assess the replication of the "D' Balance Model" as utilized by the original authors, the publication figures from Kirby 2021 were digitized using *Engauge Digitizer* (Mitchell 2021) in order to best estimate the data values from Figure 1 in Kirby 2021. This provided us with more reliable and repeatable estimates than choosing "by-eye" for the values of lap speed for the 5k and 10k (Kirby Figure 1a and 1c), and for the D' Balance curves (Kirby Figure 1b and 1d). To digitize an image three axis points are selected as anchors (indicated as red "+") and the x-y coordinates are calibrated accordingly. Desired data values are selected (blue "+") and their values were estimated by the program and saved as .csv files in the project's directory. This was performed for each of the four panels in Figure 1 of Kirby 2021. Critical speed and D'Prime values were copied verbatim from Tables 1 and 2 in Kirby 2021.
 
 ```{r, digitized-iamges, fig.cap = paste("Digitized images from Kirby 2021. Red 'plus' signs indicate calibration points and blue markers are used to estimate data values."), fig.show='hold', out.width="50%"}
 knitr::include_graphics("img/dig-kirby-1a.jpg")
@@ -63,7 +74,7 @@ knitr::include_graphics("img/dig-kirby-1b.jpg")
 
 ### Obtaining data from the 2020 Olympic Women's 5000m
 
-To provide more frequent lap splits than provided on the official race results (1000m), the 2021 Olympic Women's 5000m was streamed on [YouTube](https://www.youtube.com/watch?v=JX3ij39OAso) and lap splits were manually recorded. Unfortunately, the live broadcast did not always allow for consistent lap splits as other events or commercials interrupted the race coverage. Nonetheless, we were able to obtain reasonable estimation of lap distances, times, and race progression. The lap speed was calculated from the lap leader split by dividing the relative distance covered in meters by the relative time of the split in seconds.
+  To provide more frequent lap splits than provided on the official race results (1000m), the 2021 Olympic Women's 5000m was streamed on [YouTube](https://www.youtube.com/watch?v=JX3ij39OAso) and lap splits were manually recorded. Unfortunately, the live broadcast did not always allow for consistent lap splits as other events or commercials interrupted the race coverage. Nonetheless, we were able to obtain reasonable estimation of lap distances, times, and race progression. The lap speed was calculated from the lap leader split by dividing the relative distance covered in meters by the relative time of the split in seconds.
 
 ```{r, womems-5k-data}
 womens_5k <- 
@@ -148,7 +159,7 @@ womens_runners %>%
 
 ### Replication of Kirby 2021 data
 
-Ultimately, we were able to replicate the results from the D' Balance model presented in Kirby 2021 with the same 2017 World Championship data; however, the equations that were provided coupled with the lack of description for application of the equation made this a challenging task as we were initially unable to calculate similar results solely using the original text as guidance. Here, we several steps and propose the solution we came up with which permitted replication of the results.     The D' Balance model as presented in Kirby 2021 is based on work from Skiba et al. 2015 and describes D'balance as: 
+  Ultimately, we were able to replicate the results from the D' Balance model presented in Kirby 2021 with the same 2017 World Championship data; however, the equations that were provided coupled with the lack of description for application of the equation made this a challenging task as we were initially unable to calculate similar results solely using the original text as guidance. Here, we outline several steps and propose the solution we came up with which permitted replication of the results. The D' Balance model as presented in Kirby 2021 is based on work from Skiba et al. 2015 and describes D'balance as: 
 
 \begin{equation}
 D' Balance = D'_{0} - D'_{exp} \cdot e^{ \frac{-D_{CS} \cdot t}{D'_0} }
@@ -476,7 +487,7 @@ plot_grid(lollipop_5k, middle, lollipop_10k, nrow = 3, labels = c("A", "", "D"))
 
 ### Repeatability with the 2020 Olympic Women's 5000m
 
-Once we described the equations and procedure above we implemented the functionlity into an R package [{kin697u}](https://github.com/brentscott93/kin697u) which provides convenient wrapper functions in order to increase to reproducibility of our proposed model. Using our R package we performed the same analysis using data from the 2020 Olympic Women's 5000m. 
+  Once we described the equations and procedure above we implemented the functionlity into an R package [{kin697u}](https://github.com/brentscott93/kin697u) which provides convenient wrapper functions in order to increase to reproducibility of our proposed model. Using our R package we performed the same analysis using data from the 2020 Olympic Women's 5000m. 
 
 
 ```{r, womens_5k, fig.width=9, fig.height=5, fig.cap="Results from 2021 Olympic Women's 5000m. A) Lap speed throughout the duration of the race. B) Critical speed an D' table. C) D' balance model. Lines colored to represent ultimate finish position."}
@@ -518,17 +529,28 @@ cowplot::plot_grid(plot_womens_5k_lollipop, womens_bottom, nrow = 2, labels = c(
 
 ```
 
-The results from the 2020 Olympic Women's 5000m suggest that the Bronze medalist (Tsegay) should have had potential for a silver medal. There could be several explanations for this result, one being the simulations assume all runners are at the same place (meter mark) at the same time and do not take in account distance from leader at start of each lap. 
+  The results from the 2020 Olympic Women's 5000m suggest that the Bronze medalist (Tsegay) should have had potential for a silver medal. There could be several explanations for this result, one being the simulations assume all runners are at the same place (meter mark) at the same time and do not take in account distance from leader at start of each lap. 
 
 
 ### Future usability of the model
 
- So far we have shown that with slight modifications the D' Balance Model can be replicated and repeated with relatively good performance at predicting the finishing position as was shown by Kirby 2021. Despite the advances in reproducibility made thus far with the implementation of the R package, this analysis still remains un-accessible to the average runner or trainer (unless they are also an R programmer). To decrease the entry barrier for performing this analysis we created a web-browser based application, LAME, using the R-Shiny framework (Chang et al. 2021) to provide an easy-to-use graphical user interface (GUI) which provides a "point-and-click" experience for novice users that leverages the abilities of our {kin697u} R package. LAME is a recursive acronym which stands for Lame Application for Maximizing Endurance. LAME can be accessed at [https://brentscott93.shinyapps.io/LAME](https://brentscott93.shinyapps.io/LAME)
+  So far we have shown that with slight modifications the D' Balance Model can be replicated and repeated with relatively good performance at predicting the finishing position as was shown by Kirby 2021. Despite the advances in reproducibility made thus far with the implementation of the R package, this analysis still remains un-accessible to the average runner or trainer (unless they are also an R programmer). To decrease the entry barrier for performing this analysis we created a web-browser based application, LAME, using the R-Shiny framework (Chang et al. 2021) to provide an easy-to-use graphical user interface (GUI) which provides a "point-and-click" experience for novice users that leverages the abilities of our {kin697u} R package. LAME is a recursive acronym which stands for Lame Application for Maximizing Endurance. LAME can be accessed at [https://brentscott93.shinyapps.io/LAME](https://brentscott93.shinyapps.io/LAME). The application comes with "Demo" data built-in that allows visitors to preview the features of the app without needing to take time to fill out the necessary information. Ultimately, LAME provides an example of how the D' Balance and Critical Speed model can be offered to the general public which increases the reality of using these analyitcs as real-life training tools.
  
 ## Conclusions & Final Remarks
+
   While I spent a considerable time on this project, I probably should have spend less time coding/building an app and **more** time writing/doing the actual assignment. But, it was fun. 
   
   
 ## References
+  
+Jones, A. M., & Vanhatalo, A. (2017). The ‘Critical Power’ Concept: Applications to Sports Performance with a Focus on Intermittent High-Intensity Exercise. Sports Medicine, 47(1), 65–78. https://doi.org/10.1007/s40279-017-0688-0
 
+Joyner, M. J. (1991). Modeling: Optimal marathon performance on the basis of physiological factors. Journal of Applied Physiology, 70(2), 683–687. https://doi.org/10.1152/jappl.1991.70.2.683
 
+Kirby, B. S., Winn, B. J., Wilkins, B. W., & Jones, A. M. (2021). Interaction of exercise bioenergetics with pacing behavior predicts track distance running performance. Journal of Applied Physiology, 131(5), 1532–1542. https://doi.org/10.1152/japplphysiol.00223.2021
+
+Mark Mitchell, Baurzhan Muftakhidinov and Tobias Winchen et al, "Engauge Digitizer Software." Webpage: http://markummitchell.github.io/engauge-digitizer, Last Accessed: December 16, 2021
+
+Skiba, P. F., Fulford, J., Clarke, D. C., Vanhatalo, A., & Jones, A. M. (2015). Intramuscular determinants of the ability to recover work capacity above critical power. European journal of applied physiology, 115(4), 703-713.
+
+Winston Chang, Joe Cheng, JJ Allaire, Carson Sievert, Barret Schloerke, Yihui Xie, Jeff Allen, Jonathan McPherson, Alan Dipert and Barbara Borges (2021). shiny: Web Application Framework for R. R package version 1.7.1. https://CRAN.R-project.org/package=shiny
