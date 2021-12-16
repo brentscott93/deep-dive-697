@@ -27,9 +27,9 @@ if(knitr::is_html_output()){
  ) 
  }
 
-# if(!require("kin697u", character.only = TRUE)){
-#  devtools::install_github("brentscott93/kin697u")
-# }
+if(!require("kin697u", character.only = TRUE)){
+ devtools::install_github("brentscott93/kin697u")
+}
 ```
 
 ```{r, library, message=FALSE, warning=FALSE, echo=FALSE}
@@ -526,7 +526,7 @@ The results from the 2020 Olympic Women's 5000m suggest that the Bronze medalist
  So far we have shown that with slight modifications the D' Balance Model can be replicated and repeated with relatively good performance at predicting the finishing position as was shown by Kirby 2021. Despite the advances in reproducibility made thus far with the implementation of the R package, this analysis still remains un-accessible to the average runner or trainer (unless they are also an R programmer). To decrease the entry barrier for performing this analysis we created a web-browser based application, LAME, using the R-Shiny framework (Chang et al. 2021) to provide an easy-to-use graphical user interface (GUI) which provides a "point-and-click" experience for novice users that leverages the abilities of our {kin697u} R package. LAME is a recursive acronym which stands for Lame Application for Maximizing Endurance. LAME can be accessed at [https://brentscott93.shinyapps.io/LAME](https://brentscott93.shinyapps.io/LAME)
  
 ## Conclusions & Final Remarks
-  I probably should have spend less time coding and building apps, and **more** time writing/doing the actual assignment...
+  While I spent a considerable time on this project, I probably should have spend less time coding/building an app and **more** time writing/doing the actual assignment. But, it was fun. 
   
   
 ## References
