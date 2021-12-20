@@ -1,0 +1,717 @@
+---
+title: "CS & D' Balance"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(kin697u)
+library(here)
+library(cowplot)
+library(ggpubr)
+library(RColorBrewer)
+```
+
+Kirby 2021 Replication
+=====================================
+
+Column {.tabset data-width=650}
+-----------------------------------------------------------------------
+
+### Replication of Figure 1
+
+```{r, kirby-replication-fig1, fig.width=10, fig.height=8}
+runner_data_mens_5k <- 
+  tribble(
+    ~place, ~athlete, ~critical_speed_meters_second, ~d_prime_meters, ~fastest_5k_prediction_mmss, ~actual_finish_time_mmss, ~finish_time_behind_leader_mmss,
+    1, "Muktar Edris", 5.92, 351, 13:05.1, 13:32.8, "00:00.0",
+    2, "Mohammed Farah", 6.08, 268, 12:59.0, 13:33.2, "00:00.4",
+    3, "Paul Chelimo", 6.02, 282, 13:03.9, 13:33.3, "00:00.5",
+    4, "Yomif Kejelcha", 6.26, 175, 12:51.2, 13:33.5, "00:00.7",
+    5, "Selemon Barega", NA, NA, NA, 13:35.3, "00:02.6",
+    6, "Mohammed Ahmed", 5.99, 274, 13:08.2, 13:35.4, "00:02.6",
+    7, "Aron Kifle", 5.98, 259, 13:13.2, 13:36.9, "00:04.1",
+    8, "Andrew Butchart", 6.15, 148, 13:09.4, 13:38.7, "00:05.9",
+    9, "Justyn Knight", NA, NA, NA, 13:39.2, "00:06.4",
+    10, "Kemoy Campbell", 5.86, 243, 13:31.5, 13:39.7, "00:06.9",
+    11, "Patrick Tiernan", 6.00, 167, 13:25.6, 13:40.0, "00:07.2",
+    12, "Birhanu Balew", NA, NA, NA, 13:43.3, "00:10.50"
+  ) 
+
+
+
+# Estimated lap speeds from digitized graph
+race_data_mens_5k <- 
+  read_csv(here("data/kirby-fig1a.csv")) %>% 
+  mutate(split = 1:nrow(.),
+         lap_distance_meters = c(rep(400, 11), 200, 400))
+
+      
+
+d_balance_mens_5k <- calc_d_balance(runner_data_mens_5k, race_data_mens_5k)
+
+
+
+
+filter_d_balance_mens_5k <- 
+  d_balance_mens_5k %>% 
+  filter(athlete %in% c("Muktar Edris", "Mohammed Farah", "Paul Chelimo", "Yomif Kejelcha")) %>% 
+  mutate(source = "Replication")
+
+
+
+kirby_d_balance_mens_5k <- 
+  read_csv(here("data/kirby-fig1b.csv")) %>% 
+  pivot_longer(cols = !x, names_to = "last_name", values_to = "d_balance") %>% 
+  mutate(athlete = case_when(
+                    last_name == "Edris" ~ "Muktar Edris",
+                    last_name == "Farah" ~ "Mohammed Farah",
+                    last_name == "Chelimo" ~ "Paul Chelimo",
+                    last_name == "Kejelcha" ~ "Yomif Kejelcha"
+                    ),
+  total_race_distance_meters = x,
+  source = "Digitized Original")
+
+mens_5k <- bind_rows(filter_d_balance_mens_5k, kirby_d_balance_mens_5k)
+
+mens_5k$athlete <- factor(mens_5k$athlete, levels = c("Muktar Edris",
+                                                      "Mohammed Farah",
+                                                      "Paul Chelimo",
+                                                      "Yomif Kejelcha"))
+
+plot_mens_5k <- 
+  ggplot()+
+  geom_line(data = mens_5k, 
+            aes(total_race_distance_meters, 
+                d_balance, 
+                color = athlete, 
+                linetype = source,
+                size = source
+                ))+
+  scale_size_manual(values = c(0.5, 1))+
+  ylab("D' Balance")+
+  xlab("Race Distance (m)")+
+  ggtitle("5k Replication of Kirby 2021 Figure 1B")+
+    scale_color_manual(name = "Athlete", values = brewer.pal(4, "Dark2"))+
+    scale_linetype(name = "Data Source")+
+    scale_size_manual(values = c(0.5, 1), guide = "none")+
+  theme_cowplot(12)
+
+
+
+
+#######################################################
+runner_data_mens_10k <- 
+  tribble(
+    ~place, ~athlete, ~critical_speed_meters_second, ~d_prime_meters,
+    1, "Mohammed Farah", 6.08, 268,
+    2, "Joshua Cheptegei", 6.07, 250,
+    3, "Paul Tanui", 6.14, 164,
+    4, "Bedan Karoki", 6.06, 214,
+    5, "Jemal Yimer", NA, NA,
+    6, "Geoffrey Kamworor", 6.01, 316,
+    7, "Abadi Hadis", 5.99, 317, 
+    8, "Mohammed Ahmed", 6.00, 274,
+    9, "Shadrack Kipchirchir", 6.09, 113,
+    10, "Andamlak Belihu", NA, NA,
+    11, "Aron Kifle", 5.98, 259,
+    12, "Abraham Cheroben", NA, NA,
+    13, "Leonard Korir", 6.02, 165,
+    14, "Timothy Toroitich", 6.03, 101,
+    15, "Hassan Mead", 5.95, 228
+ ) 
+
+race_data_mens_10k <- 
+  read_csv(here("data/kirby-fig1c.csv")) %>% 
+  mutate(split = 1:nrow(.),
+         lap_distance_meters = 400)
+
+race_data_mens_10k$lap_leader_speed_meters_second[[nrow(race_data_mens_10k)]] <- 7.2
+
+kirby_d_balance_10k <- 
+  read_csv(here("data/kirby-fig1d.csv")) %>% 
+  pivot_longer(cols = !x, names_to = "last_name", values_to = "d_balance") %>% 
+  mutate(athlete = case_when(
+    last_name == "Farah" ~ "Mohammed Farah",
+    last_name == "Cheptegei" ~ "Joshua Cheptegei",
+    last_name == "Tanui" ~ "Paul Tanui",
+    last_name == "Karoki" ~ "Bedan Karoki" 
+  ),
+  total_race_distance_meters = x,
+  source = "Digitized Original")
+
+
+
+d_balance_mens_10k <- calc_d_balance(runner_data_mens_10k, race_data_mens_10k)
+
+
+filter_d_balance_mens_10k <- 
+  d_balance_mens_10k %>% 
+  filter(athlete %in%  c("Mohammed Farah", "Joshua Cheptegei","Paul Tanui", "Bedan Karoki" )) %>% 
+  mutate(source = "Replication")
+
+
+mens_10k <- bind_rows(filter_d_balance_mens_10k, kirby_d_balance_10k)
+
+mens_10k$athlete <- factor(mens_10k$athlete, levels = c("Mohammed Farah",
+                                                        "Joshua Cheptegei",
+                                                        "Paul Tanui",
+                                                        "Bedan Karoki"
+                                                      ))
+
+plot_mens_10k <- 
+  ggplot()+
+    geom_line(data = mens_10k, 
+              aes(total_race_distance_meters, 
+                  d_balance, 
+                  linetype = source,
+                  color = athlete,
+                  size = source
+              ))+
+    ylab("D' Balance")+
+    xlab("Race Distance (m)")+
+    ggtitle("10k Replication of Kirby 2021 Figure 1D")+
+    scale_color_manual(name = "Athlete", values = brewer.pal(4, "Dark2"))+
+    scale_linetype(name = "Data Source")+
+    scale_size_manual(values = c(0.5, 1), guide = "none")+
+    theme_cowplot(10)
+    
+
+
+
+######################
+
+all_rep <- imap_dfr(list("5k" = d_balance_mens_5k, "10k" = d_balance_mens_10k), ~mutate(.x, race = .y))
+
+all_rep$race <- factor(all_rep$race, levels = c("5k", "10k"))
+rep_all_athletes <-
+  ggplot()+
+  geom_line(data = all_rep, 
+            aes(total_race_distance_meters, 
+                d_balance, 
+                color = athlete,
+            ))+
+  facet_wrap(~race, scales = "free_x")+
+  ylab("D' Balance")+
+  xlab("Race Distance (m)")+
+  ggtitle("Replication of all athletes D' Balance")+
+  scale_y_continuous(breaks = seq(-200, 350, by = 50))+
+  scale_color_manual(name = "Athlete", values = c(brewer.pal(8, "Dark2"), brewer.pal(9, "Set1"), "black"))+
+  theme_cowplot()+
+  theme(
+    strip.background = element_rect(fill = "black" ),
+    strip.text = element_text(color = "white"),
+    panel.border = element_rect(color = "black", size = 1.2)
+  )
+
+
+race_data_mens_5k$meter_mark <- c(seq(400, 4400, by = 400), 4600, 5000)
+cs_data_overlay_5k <- filter(runner_data_mens_5k, 
+                          athlete %in% c("Muktar Edris", "Mohammed Farah", "Paul Chelimo", "Yomif Kejelcha"))
+
+lollipop_5k <- 
+ggplot()+
+  geom_hline(data = cs_data_overlay_5k,
+             aes(yintercept = critical_speed_meters_second, color = fct_reorder(athlete, critical_speed_meters_second)))+
+  geom_segment(data = race_data_mens_5k,
+               aes(x = meter_mark,
+                   xend = meter_mark, 
+                   y = 0, 
+                   yend = lap_leader_speed_meters_second),
+               size = 1)+
+  geom_point(data = race_data_mens_5k, 
+             aes(x = meter_mark, 
+                 y = lap_leader_speed_meters_second), 
+             size = 9,
+             shape = 21,
+             fill = "grey15",
+             stroke = 1.5)+
+  
+  geom_text(data = race_data_mens_5k, 
+            aes(x = meter_mark, 
+                y = lap_leader_speed_meters_second,
+                label = round(lap_leader_speed_meters_second, 2)),
+            size = 3,
+            color = "white")+
+  ylab("Lap Speed (meters/second)")+
+  xlab("Distance (meters)")+
+  ggtitle("Men's 5k")+
+  coord_cartesian(ylim = c(5, 8))+
+  scale_y_continuous(expand = expansion(c(0, 0.1)))+
+  scale_x_continuous(breaks = race_data_mens_5k$meter_mark)+
+  scale_color_manual(name = "Athlete Critical Speed", values = brewer.pal(4, "Dark2"), guide = guide_legend(reverse=TRUE))+
+  theme_cowplot(10)+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = c(0.1, 0.7)
+  )
+ 
+
+race_data_mens_10k$meter_mark <- seq(400, 10000, by = 400)
+cs_data_overlay_10k <- filter(runner_data_mens_10k, 
+                              athlete %in%  c("Mohammed Farah", "Joshua Cheptegei","Paul Tanui", "Bedan Karoki" ))
+
+lollipop_10k <- 
+ggplot()+
+  geom_hline(data = cs_data_overlay_10k,
+             aes(yintercept = critical_speed_meters_second, color = fct_reorder(athlete, critical_speed_meters_second)))+
+  geom_segment(data = race_data_mens_10k,
+               aes(x = meter_mark,
+                   xend = meter_mark, 
+                   y = 0, 
+                   yend = lap_leader_speed_meters_second),
+               size = 1)+
+  geom_point(data = race_data_mens_10k, 
+             aes(x = meter_mark, 
+                 y = lap_leader_speed_meters_second), 
+             size = 8,
+             shape = 21,
+             fill = "grey15",
+             stroke = 1.2)+
+  
+  geom_text(data = race_data_mens_10k, 
+            aes(x = meter_mark, 
+                y = lap_leader_speed_meters_second,
+                label = round(lap_leader_speed_meters_second, 2)),
+            size = 3,
+            color = "white")+
+  ylab("Lap Speed (meters/second)")+
+  xlab("Distance (meters)")+
+  coord_cartesian(ylim = c(5.7, 7.2))+
+  scale_y_continuous(expand = expansion(c(0, 0.1)))+
+  ggtitle("Men's 10k")+
+  scale_x_continuous(breaks = race_data_mens_10k$meter_mark)+
+  scale_color_manual(name = "Athlete Critical Speed", values = brewer.pal(4, "Dark2"), guide = guide_legend(reverse=TRUE))+
+  theme_cowplot(12)+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = c(0.1, 0.7)
+  )
+
+
+top <- plot_grid(lollipop_5k, plot_mens_5k, nrow = 1, labels = c("A", "B"))
+bottom <- plot_grid(lollipop_10k, plot_mens_10k, nrow = 1, labels = c("C", "D"))
+middle <-  plot_grid(plot_mens_5k,
+                     plot_mens_10k,
+                     nrow = 1,
+                     labels = c("B", "C"),
+                     rel_widths = c(0.45, 0.55))
+
+plot_grid(lollipop_5k, middle, lollipop_10k, nrow = 3, labels = c("A", "", "D"))
+```
+
+### All athletes D' Balance
+```{r, fig.width=10}
+rep_all_athletes
+```
+
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Estimating Lap Speed from Kirby 2021
+
+```{r}
+knitr::include_graphics("img/dig-kirby-1a.jpg")
+```
+
+### Estimating D' Balance Curves
+
+```{r}
+knitr::include_graphics("img/dig-kirby-1b.jpg")
+```
+
+2020 Olympic Women 5k
+=====================================
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### PR Data
+```{r}
+womens_data <- 
+  tribble(
+    ~athlete, ~distance_meters, ~time, 
+    "Hassan", 800, "1:56",
+    "Hassan", 1000, "2:34",
+    "Hassan", 1500, "3:51",
+    "Hassan", 1609, "4:12",
+    "Hassan", 3000, "8:18",
+    "Hassan", 5000, "14:22",
+    "Hassan", 10000, "29:06",
+    
+    "Obiri", 800, "2:00",
+    "Obiri", 1500, "3:57",
+    "Obiri", 1609, "4:16",
+    "Obiri", 3000, "8:20",
+    "Obiri", 3218, "9:14",
+    "Obiri", 5000, "14:18",
+    "Obiri", 10000, "29:59",
+    
+    "Tsegay", 800, "1:59",
+    "Tsegay", 1500, "3:54",
+    "Tsegay", 5000, "14:13",
+    "Tsegay", 10000, "29:39",
+    
+    "Tirop", 1500, "4:12.68",
+    "Tirop", 3000, "8:22.92",
+    "Tirop", 5000, "14:20.68",
+    "Tirop", 10000, "30:25.20",
+    
+  
+)  %>% 
+  mutate(seconds = to_seconds(time)) 
+
+womens_runners <-
+  womens_data %>% 
+  kin697u::calc_critical_speed()
+
+dplyr::select(womens_data, 
+              "Athlete" = athlete, 
+              "Distance (m)" = distance_meters,
+              "Time" = time) %>% 
+   knitr::kable()
+```
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### CS Model Plot
+```{r, fig.width=8}
+women_run2 <- 
+  womens_runners %>% 
+  mutate(lm_predict = map(cs_mod, 
+                           ~as.data.frame(
+                             predict(.x, 
+                                     newdata = data.frame(seconds = 0:21600),
+                                      interval = "conf")) %>% 
+                              mutate(x = 0:21600)))
+        
+lm_predict <- 
+  women_run2 %>% 
+  group_by(athlete) %>% 
+  dplyr::select(athlete, lm_predict) %>% 
+  unnest(cols = lm_predict)
+
+ggplot()+
+             geom_point(data = womens_data, aes(seconds, distance_meters, color = athlete), size = 2)+
+             # geom_ribbon(data = lm_predict, aes(x = x, ymin = lwr, ymax = upr, fill  = athlete), alpha = 0.3)+
+             geom_line(data = lm_predict, aes(x = x, y = fit, color = athlete), linetype = "dashed")+
+             scale_color_manual(values = brewer.pal(4, "Dark2"))+
+             scale_fill_manual(values = brewer.pal(4, "Dark2"))+
+             xlab("Seconds")+
+             ylab("Meters")+
+  coord_cartesian(xlim = c(0, max(womens_data$seconds)+200),
+                             ylim = c(0, max(womens_data$distance_meters)+2000))+
+             theme_minimal_grid(font_size = 16)+
+           theme(
+            # legend.position = "none"
+           )
+```
+
+### CS & D' Data
+```{r}
+womens_runners %>% 
+  mutate(critical_speed_meters_second = round(critical_speed_meters_second, 2),
+         d_prime_meters = round(d_prime_meters, 0)) %>% 
+  dplyr::select("Athlete" = athlete, 
+                "CS (m/s)" = critical_speed_meters_second,
+                "D' (m)" = d_prime_meters) %>% 
+  knitr::kable(caption = "2020 Olympic Women's Top Finishers CS/D'")
+```
+
+
+Column {.tabset data-width=500}
+-----------------------------------------------------------------------
+### 2020 Olympic Women's 5k
+```{r, fig.width=8, fig.height=6}
+womens_5k <- 
+  tribble(
+  ~meter_mark, ~lap_distance_meters, ~time,
+  200, 200,  "0:38.9",
+  1000, 800, "3:00.67",
+  1400, 400, "4:12.6",
+  1800, 400, "5:25.2",
+  2000, 200, "6:00.22",
+  2200, 200, "6:36.6",
+  2600, 400, "7:46.4",
+  3000, 400, "8:59.81",
+  3400, 400, "10:11.0",
+  3800, 400, "11:21.9",
+  4000, 200, "11:57.09",
+  4200, 200, "12:31.5",
+  4600, 400, "13:39.4", 
+  4800, 200, "14:09.0",
+  5000, 200, "14:36.79"
+) %>% 
+  mutate(
+    seconds = to_seconds(time),
+    split_time_seconds = seconds-lag(seconds, 1, default = 0),
+    lap_leader_speed_meters_second = lap_distance_meters/split_time_seconds
+  )
+
+# womens_5k %>% 
+#   dplyr::select("Distance (m)" = meter_mark, 
+#                 "Lap Speed (m/s)" = lap_leader_speed_meters_second) %>% 
+#   mutate("Lap Speed (m/s)" = round(`Lap Speed (m/s)`, 2)) %>% 
+#   knitr::kable(caption = "2020 Olympic Women's 5k")
+
+d_balance_womens_5k <- kin697u::calc_d_balance(womens_runners, womens_5k)
+
+d_balance_womens_5k$athlete <- factor(d_balance_womens_5k$athlete, levels = c("Hassan", "Obiri", "Tsegay",  "Tirop"))
+
+plot_womens_5k <- 
+  plot_d_balance(d_balance_womens_5k)+
+  scale_color_manual(values = c("gold", "grey50", "darkorange", "black"))+
+  ggtitle("2021 Olympic Women's 5000m")
+
+
+womens_runners$athlete <- factor(womens_runners$athlete, levels = c("Hassan", "Obiri", "Tsegay",  "Tirop"))
+
+plot_womens_5k_lollipop <-
+    plot_lollipop_race(womens_runners, womens_5k)+
+    scale_color_manual(name = NULL, values = c("gold", "grey50", "darkorange", "black"))+
+    coord_cartesian(ylim = c(4, 7.3))+
+    ggtitle("2021 Olympic Women's 5000m")+
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = c(0, 0.9),
+      legend.direction = "horizontal"
+    )
+
+womens_5k_table <- 
+  womens_runners %>% 
+  dplyr::select(Athlete = athlete,
+                "CS (m/s)" = critical_speed_meters_second,
+                "D' Prime (m)" = d_prime_meters) %>% 
+  mutate(across(where(is.numeric), ~round(., 2))) %>% 
+  ggpubr::ggtexttable(theme = ttheme("light"))
+
+  
+womens_bottom <- cowplot::plot_grid(womens_5k_table, plot_womens_5k, nrow = 1, labels = c("B", "C"))
+
+cowplot::plot_grid(plot_womens_5k_lollipop, plot_womens_5k, nrow = 2, labels = c("A", "B"))
+```
+
+### Split Data
+```{r}
+womens_5k %>% 
+   mutate(lap_leader_speed_meters_second = round(lap_leader_speed_meters_second, 2)) %>% 
+  dplyr::select("Cumulative Distance (m)" = meter_mark, 
+                "Split Time (seconds)" = split_time_seconds,
+                "Total Time (seconds)" = time,
+                "Speed (m/s)" = lap_leader_speed_meters_second) %>% 
+  knitr::kable()
+  
+```
+
+
+1972 Munich 5k
+=====================================
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### PR Data
+```{r}
+munich_runners <- 
+  tribble(
+    ~athlete, ~distance_meters, ~time,   
+    "Pre", 1500, "3:39",
+    "Pre", 3000, "7:44",
+    "Pre", 3218, "8:19",
+    "Pre", 5000, "13:22",
+    "Pre", 9656, "27:22",
+    
+    "Viren", 3000, "7:43",
+    "Viren", 3218, "8:26",
+    "Viren", 5000, "13:19",
+    "Viren", 10000, "27:38",
+    
+    "Gammoudi", 3000, "7:50",
+    "Gammoudi", 5000, "13:27",
+    "Gammoudi", 10000, "27:54",
+    
+    "Stewart", 1500, "3:39",
+    "Stewart", 3218, "8:22",
+    "Stewart", 5000, "13:22",
+    
+    
+  ) %>% 
+  mutate(seconds = to_seconds(time))
+
+dplyr::select(munich_runners, 
+              "Athlete" = athlete, 
+              "Distance (m)" = distance_meters,
+              "Time" = time) %>% 
+   knitr::kable()
+```
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### CS Model Plot
+```{r, fig.width=8}
+
+munich_cs_df <- calc_critical_speed(munich_runners) %>% 
+   mutate(lm_predict = map(cs_mod, 
+                           ~as.data.frame(
+                             predict(.x, 
+                                     newdata = data.frame(seconds = 0:21600),
+                                      interval = "conf")) %>% 
+                              mutate(x = 0:21600)))
+
+
+
+munich_lm_predict <- 
+  munich_cs_df %>% 
+  group_by(athlete) %>% 
+  dplyr::select(athlete, lm_predict) %>% 
+  unnest(cols = lm_predict)
+
+ggplot()+
+             geom_point(data = munich_runners, aes(seconds, distance_meters, color = athlete), size = 2)+
+             # geom_ribbon(data = lm_predict, aes(x = x, ymin = lwr, ymax = upr, fill  = athlete), alpha = 0.3)+
+             geom_line(data = munich_lm_predict, aes(x = x, y = fit, color = athlete), linetype = "solid")+
+             scale_color_manual(values = brewer.pal(4, "Dark2"))+
+             scale_fill_manual(values = brewer.pal(4, "Dark2"))+
+             xlab("Seconds")+
+             ylab("Meters")+
+  coord_cartesian(xlim = c(0, max(womens_data$seconds)+200),
+                             ylim = c(0, max(womens_data$distance_meters)+2000))+
+             theme_minimal_grid(font_size = 16)+
+           theme(
+            # legend.position = "none"
+           )
+```
+
+### CS & D' Data
+```{r}
+munich_cs_df %>% 
+  mutate(critical_speed_meters_second = round(critical_speed_meters_second, 2),
+         d_prime_meters = round(d_prime_meters, 0)) %>% 
+  dplyr::select("Athlete" = athlete, 
+                "CS (m/s)" = critical_speed_meters_second,
+                "D' (m)" = d_prime_meters) %>% 
+  knitr::kable(caption = "Munich 1972 CS/D'")
+```
+
+
+Column {.tabset data-width=500}
+-----------------------------------------------------------------------
+### 1972 Munich Olympic 5k
+```{r, fig.width=8, fig.height=6}
+
+munich_5000 <- 
+  tribble(
+    ~lap_distance_meters, ~time,
+    1800, "4:58",
+    400, "6:06",
+    400, "7:13",
+    400, "8:20",
+    400, "9:26",
+    400, "10:29",
+    400, "11:30",
+    400, "12:30",
+    400, "13:26"
+  ) %>% 
+  mutate(cumulative_distance = cumsum(lap_distance_meters),
+         seconds = to_seconds(time),
+         split_time_seconds = seconds-lag(seconds, default = 0),
+         lap_leader_speed_meters_second = lap_distance_meters/split_time_seconds)
+
+d_balance_1972 <- kin697u::calc_d_balance(munich_cs_df, munich_5000)    
+
+d_balance_1972$athlete <- factor(d_balance_1972$athlete, levels = c("Viren", "Gammoudi", "Stewart", "Pre"))
+
+munich_d_bal_plot <- plot_d_balance(d_balance_1972)+
+     scale_color_manual(name = "Athlete", values = c("gold", "grey50", "darkorange", "green"))
+    
+
+munich_5000_2 <- 
+  munich_5000 %>% 
+  mutate(meter_mark = cumulative_distance)
+
+munich_cs_df$athlete <- factor(munich_cs_df$athlete, levels = c("Viren", "Gammoudi", "Stewart", "Pre"))
+
+munich_lollipop <- 
+  plot_lollipop_race(munich_cs_df, munich_5000_2)+
+  scale_color_manual(name = NULL, values = c("gold", "grey50", "darkorange", "green"))+
+  coord_cartesian(ylim = c(5, 7.5))+
+  theme(
+     #axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = c(0, 0.9),
+      legend.direction = "horizontal"
+  )
+
+plot_grid(munich_lollipop, 
+          munich_d_bal_plot,
+          nrow = 2,
+          labels = c("A", "B"))
+```
+ 
+### Split Data
+```{r}
+munich_5000 %>% 
+  mutate(lap_leader_speed_meters_second = round(lap_leader_speed_meters_second, 2)) %>% 
+  dplyr::select("Cumulative Distance (m)" = cumulative_distance, 
+                "Split Time (seconds)" = split_time_seconds,
+                "Total Time (seconds)" = time,
+                "Speed (m/s)" = lap_leader_speed_meters_second) %>% 
+  knitr::kable()
+```
+
+### 1972 runners in the 2017 World Championship 5k
+```{r, fig.width=8, fig.height=6}
+slow_last_mile <- 
+  tibble(lap_distance_meters = 400,
+         split_time_seconds = c(70, 70, 70, 70))
+
+sim_munich_5000 <- 
+  munich_5000 %>% 
+   mutate(seconds = to_seconds(time),
+          split_time_seconds = seconds-lag(seconds, default = 0)) %>% 
+  dplyr::select(lap_distance_meters, split_time_seconds) %>% 
+  slice(1:5) %>% 
+  rbind(slow_last_mile) %>% 
+   mutate(cumulative_distance = cumsum(lap_distance_meters),
+          lap_leader_speed_meters_second = lap_distance_meters/split_time_seconds)
+
+
+sim_d_balance_1972 <- kin697u::calc_d_balance(munich_cs_df, race_data_mens_5k)    
+
+sim_d_balance_1972$athlete <- factor(sim_d_balance_1972$athlete, levels = c("Viren", "Gammoudi", "Stewart", "Pre"))
+
+sim_munich_d_bal_plot <- plot_d_balance(sim_d_balance_1972)+
+     scale_color_manual(name = "Athlete", values = c("gold", "grey50", "darkorange", "green"))
+    
+
+sim_munich_5000_2 <- 
+  sim_munich_5000 %>% 
+  mutate(meter_mark = cumulative_distance)
+
+munich_cs_df$athlete <- factor(munich_cs_df$athlete, levels = c("Viren", "Gammoudi", "Stewart", "Pre"))
+
+sim_munich_lollipop <- 
+  plot_lollipop_race(munich_cs_df, race_data_mens_5k)+
+  scale_color_manual(name = NULL, values = c("gold", "grey50", "darkorange", "green"))+
+  coord_cartesian(ylim = c(5, 8))+
+  theme(
+     #axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = c(0, 0.9),
+      legend.direction = "horizontal"
+  )
+
+plot_grid(sim_munich_lollipop, 
+          sim_munich_d_bal_plot,
+          nrow = 2,
+          labels = c("A", "B"))
+  
+```
+
+ 
