@@ -3,10 +3,11 @@ title: A deep dive into the replication, repeatability, and future utilization o
   the critical running speed model for predicting distance race performances
 author: "Brent Scott"
 output:
-  pdf_document: default
+  word_document: default
   html_document:
     code_folding: hide
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
